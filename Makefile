@@ -5,9 +5,11 @@ all:
 	$(CXX) main.c $(CXXFLAGS) -o ./build/$(target)
 
 install: all
+	mkdir -p ~/.local/bin
 	mv ./build/$(target) /usr/bin
 
 install-local: all
+	mkdir -p ~/.local/bin
 	mv ./build/$(target) ~/.local/bin
 
 uninstall:
