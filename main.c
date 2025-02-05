@@ -92,6 +92,7 @@ int main(int argc, char* argv[]) {
             output_str[ind++] = ',';
         }
     }
+    output_str[ind++] = '\0';
     strcat(output_str, end);
     strcat(output_str, output_name);
     strcat(output_str, end_mid);
