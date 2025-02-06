@@ -41,7 +41,7 @@ int main(int argc, char* argv[]) {
     int bytes = ftell(input_f);
     fseek(input_f, 0, SEEK_SET);
     // Needs to be unsigned so it int conversion later doesn't try to convert from two's complement
-    unsigned char file_bytes[bytes];
+    unsigned char* file_bytes = (unsigned char*)calloc(bytes, 1);
     fread(file_bytes, 1, bytes, input_f);
     fclose(input_f);
 
@@ -49,6 +49,7 @@ int main(int argc, char* argv[]) {
     FILE* output_f = fopen(output, "w");
     if (!output_f) {
         fprintf(stderr, "Output File could not be creted.\n");
+        free(file_bytes);
         return EXIT_FAILURE;
     }
     // Formatting for header file
@@ -58,18 +59,19 @@ int main(int argc, char* argv[]) {
     char end_mid[] = "_length = ";
     char end_end[] = ";\n";
     // Definitely big enough. 100% overkill
-    char len_str[sizeof(unsigned long)];
+    char len_str[sizeof(unsigned long) * 8];
     // This res var is used for responses later in a few places
     int res = sprintf(len_str, "%d", bytes);
     // <0 if error and 0 if no bytes written. I consider both a fail
     if (res <= 0) {
         fprintf(stderr, "Couldnt get length of bytes\n");
+        free(file_bytes);
         return EXIT_FAILURE;
     }
     // Adding up all the header formatting text, the output_name twice, once for the unsigned char array and once for the length name.
     // bytes*4 due to a byte being 3 characters long MAX eg. 255, and the comma seperation.
     // +3 due to null term, and anything misc I may have forgotten.
-    char output_str[strlen(beginning) + (strlen(output_name) * 2) + (bytes * 4) + strlen(end) + strlen(end_end) + strlen(len_str) + strlen(end_mid) + 3];
+    char *output_str = (char*)calloc(strlen(beginning) + (strlen(output_name) * 2) + (bytes * 4) + strlen(end) + strlen(end_end) + strlen(len_str) + strlen(end_mid) + 3, 1);
     strcpy(output_str, beginning);
     strcat(output_str, output_name);
     strcat(output_str, beginning_next);
@@ -82,6 +84,8 @@ int main(int argc, char* argv[]) {
         res = sprintf(buf, "%d",byte);
         if (res <= 0) {
             fprintf(stderr, "Error writing bytes to file\n");
+            free(file_bytes);
+            free(output_str);
             return EXIT_FAILURE;
         }
         for (int j = 0; j < res; j++) {
@@ -102,6 +106,8 @@ int main(int argc, char* argv[]) {
     fwrite(output_str, strlen(output_str), 1, output_f);
     // Closing file
     fclose(output_f);
+    free(file_bytes);
+    free(output_str);
     return EXIT_SUCCESS;
 }
 

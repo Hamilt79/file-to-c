@@ -1,4 +1,5 @@
 target := f2c
+CXXFLAGS += -g
 
 all:
 	mkdir -p build
